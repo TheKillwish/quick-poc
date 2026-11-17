@@ -43,16 +43,10 @@ llm = ChatOpenAI(model="gpt-4o", temperature=0)
 
 
 # ==============================================================================
-# Helper: Export CSI Backlog to Styled Excel (.xlsx)
+# Helpers: Markdown Table to Pandas DataFrame & Excel Replication
 # ==============================================================================
-def export_csi_backlog_to_excel(
-    csi_backlog_markdown: str,
-    correlated_findings: str,
-    output_path: Path
-) -> str:
-    """Parses the generated CSI backlog markdown and writes a professionally formatted
-    Excel (.xlsx) file with styled headers, auto-wrapping, borders, and priority highlights.
-    """
+def parse_markdown_table_to_df(csi_backlog_markdown: str) -> pd.DataFrame:
+    """Parses the generated CSI backlog markdown table into a clean Pandas DataFrame."""
     headers = [
         "Priority",
         "Systemic Issue Theme",
@@ -62,7 +56,6 @@ def export_csi_backlog_to_excel(
         "Recommended CSI Action",
     ]
 
-    # Parse markdown table rows
     lines = [l.strip() for l in csi_backlog_markdown.strip().splitlines() if l.strip()]
     table_lines = [l for l in lines if l.startswith("|") and l.endswith("|")]
 
@@ -84,13 +77,24 @@ def export_csi_backlog_to_excel(
                 cols.extend([""] * (len(headers) - len(cols)))
                 data_rows.append(cols)
 
+    return pd.DataFrame(data_rows, columns=headers)
+
+
+def export_csi_backlog_to_excel(
+    df_backlog: pd.DataFrame,
+    correlated_findings: str,
+    output_path: Path
+) -> str:
+    """Replicates the CSI Backlog Pandas DataFrame into a professionally formatted
+    Excel (.xlsx) file with styled headers, auto-wrapping, borders, and priority highlights.
+    """
     wb = openpyxl.Workbook()
 
     # --- Sheet 1: CSI_Backlog ---
     ws1 = wb.active
     ws1.title = "CSI_Backlog"
     ws1.views.sheetView[0].showGridLines = True
-    ws1.append(headers)
+    ws1.append(list(df_backlog.columns))
 
     # Styles
     header_fill = PatternFill(start_color="1F4E78", end_color="1F4E78", fill_type="solid")
@@ -111,8 +115,8 @@ def export_csi_backlog_to_excel(
         cell.font = header_font
         cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
 
-    for row in data_rows:
-        ws1.append(row)
+    for row_vals in df_backlog.values.tolist():
+        ws1.append(row_vals)
 
     for row in ws1.iter_rows(min_row=2, max_row=ws1.max_row, min_col=1, max_col=ws1.max_column):
         priority_val = str(row[0].value or "")
@@ -337,14 +341,15 @@ Provide a comprehensive, structured technical analysis detailing all correlated 
 
 
 # ==============================================================================
-# Node 3: Generate CSI Backlog (LLM & Excel Export)
+# Node 3: Generate CSI Backlog (LLM, Pandas DF Print & Excel Replication)
 # ==============================================================================
 def generate_csi_backlog(state: CSIAnalysisState) -> dict:
     """Node 3 (LLM): Act as a CSI Lead. Read correlated_findings, output a
-    prioritized Markdown table, and export directly to a styled Excel (.xlsx) file.
+    prioritized Markdown table, parse into a Pandas DataFrame, print it to the terminal,
+    and replicate directly into a styled Excel (.xlsx) file.
     """
     print("\n" + "=" * 80)
-    print(">>> [NODE 3: generate_csi_backlog] Synthesizing CSI Backlog & Generating XLSX")
+    print(">>> [NODE 3: generate_csi_backlog] Synthesizing CSI Backlog & Replicating to XLSX")
     print("=" * 80)
     print("[*] Translating operational findings into a strategic Problem Management CSI Backlog...")
 
@@ -400,15 +405,30 @@ Ensure:
             "| **P3 - Medium** | **Cross-Region Peering Network Instability** | `Midnight_Batch` -> `App_Beta` (`Process_Store_Feed_Poll`), `App_Alpha` (`Process_Queue_Publish`) / `Network_Core_VPC_Peering` | `INC0078010`: BGP route flapping in primary data center causing packet drop and sync latency across cloud repositories | Single-point-of-failure routing topology across multi-region cloud VPC peering without active-active multi-path failover | Implement redundant multi-cloud interconnect/VPN tunnels with automated BGP failover health probes to ensure continuous cross-region data replication. |"
         )
 
-    # Export directly to styled Excel (.xlsx) file
+    # Convert to Pandas DataFrame
+    df_csi_backlog = parse_markdown_table_to_df(csi_backlog_markdown)
+
+    # Print in Pandas DataFrame format before replication into csi_backlog_output.xlsx
+    print("\n" + "=" * 80)
+    print("📊 CSI BACKLOG (PANDAS DATAFRAME PREVIEW - BEFORE EXCEL REPLICATION)")
+    print("=" * 80)
+    with pd.option_context(
+        "display.max_columns", None,
+        "display.width", 1000,
+        "display.max_colwidth", 42
+    ):
+        print(df_csi_backlog.to_string(index=False))
+    print("=" * 80 + "\n")
+
+    # Export & Replicate directly to styled Excel (.xlsx) file
     base_dir = Path(__file__).resolve().parent
     output_excel_path = base_dir / "csi_backlog_output.xlsx"
     saved_path = export_csi_backlog_to_excel(
-        csi_backlog_markdown=csi_backlog_markdown,
+        df_backlog=df_csi_backlog,
         correlated_findings=state.get("correlated_findings", ""),
         output_path=output_excel_path,
     )
-    print(f"[*] CSI Backlog successfully saved to Excel (.xlsx): {saved_path}")
+    print(f"[*] Successfully replicated Pandas DataFrame to Excel: {saved_path}")
 
     return {
         "csi_backlog_markdown": csi_backlog_markdown,
@@ -461,14 +481,14 @@ if __name__ == "__main__":
     # Execute Graph
     final_output = app.invoke(initial_state)
 
-    # Output confirmation (XLSX output only)
+    # Output confirmation
     print("\n" + "=" * 80)
-    print("📊 CONTINUAL SERVICE IMPROVEMENT (CSI) BACKLOG EXCEL OUTPUT GENERATED")
+    print("📁 CONTINUAL SERVICE IMPROVEMENT (CSI) BACKLOG REPLICATION COMPLETE")
     print("=" * 80)
-    print(f"[✓] Output File: {final_output['output_excel_path']}")
+    print(f"[✓] Replicated Output File: {final_output['output_excel_path']}")
     print("\n[*] Workbook Structure:")
-    print("    - Sheet 1: 'CSI_Backlog' (Prioritized Problem Management & CSI Engineering Actions)")
+    print("    - Sheet 1: 'CSI_Backlog' (Replicated from Pandas DataFrame with executive styling)")
     print("    - Sheet 2: 'RCA_Correlated_Findings' (Technical RCA & Event Correlation Details)")
     print("=" * 80)
-    print("✅ Complete. Output delivered in XLSX file.")
+    print("✅ Complete. Pandas DataFrame printed & replicated inside csi_backlog_output.xlsx.")
     print("=" * 80 + "\n")

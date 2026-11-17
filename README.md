@@ -1,23 +1,26 @@
 # IT Operations Continual Service Improvement (CSI) Agent POC
 
-A Python Proof of Concept (POC) demonstrating how to leverage **LangGraph**, **Pandas**, and **OpenAI (gpt-4o)** to break down operational silos between manually maintained multi-sheet batch monitoring Excel trackers and ITSM incident logs. The agent ingests telemetry, correlates failures across applications and batch processes, and generates an automated, data-driven **Problem Management / Continual Service Improvement (CSI) Backlog in Excel (.xlsx) format**.
+A Python Proof of Concept (POC) demonstrating how to leverage **LangGraph**, **Pandas**, and **OpenAI (gpt-4o)** to break down operational silos between manually maintained multi-sheet batch monitoring Excel trackers and ITSM incident logs. The agent ingests telemetry, correlates failures across applications and batch processes, displays the results as a **Pandas DataFrame**, and replicates them into an automated, data-driven **Problem Management / Continual Service Improvement (CSI) Backlog in Excel (.xlsx)**.
 
 ---
 
-## Output Delivered: Excel (`.xlsx`) Only
+## Output Delivered: Pandas DataFrame & Excel (`.xlsx`)
 
-When the pipeline finishes, the final output is saved directly as a styled Excel workbook at:
-```
-/Users/amankumar/Desktop/New-POC/csi_backlog_output.xlsx
-```
+1. **Terminal Console Display:**
+   Prints the structured **Pandas DataFrame** preview directly to the terminal for immediate verification.
+2. **Excel Replication File:**
+   Replicates the DataFrame with executive styling directly to:
+   ```
+   /Users/amankumar/Desktop/New-POC/csi_backlog_output.xlsx
+   ```
 
 ### Workbook Sheets:
-1. **`CSI_Backlog`**:
-   - Standardized Problem Management Backlog.
-   - **Columns:** `Priority` | `Systemic Issue Theme` | `Impacted Jobs/CIs` | `Linked Tickets & Evidence` | `Root Cause Pattern` | `Recommended CSI Action`
-   - Formatted with custom column widths, text wrapping, borders, header styling, and priority status highlights (P1, P2, P3).
-2. **`RCA_Correlated_Findings`**:
-   - Full technical IT Operations RCA report detailing upstream-to-downstream failure chains and ticket correlations.
+- **`CSI_Backlog`**:
+  Replicated from the Pandas DataFrame.
+  **Columns:** `Priority` | `Systemic Issue Theme` | `Impacted Jobs/CIs` | `Linked Tickets & Evidence` | `Root Cause Pattern` | `Recommended CSI Action`
+  Formatted with custom column widths, text wrapping, borders, header styling, and priority status highlights (P1, P2, P3).
+- **`RCA_Correlated_Findings`**:
+  Full technical IT Operations RCA report detailing upstream-to-downstream failure chains and ticket correlations.
 
 ---
 
@@ -45,9 +48,11 @@ The system reads native **Excel (`.xlsx`) files** from `data/`:
 .venv/bin/python main.py
 ```
 
-Or activate the environment:
-```bash
-source .venv/bin/activate
+Or on Windows:
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
 python main.py
 ```
 
@@ -59,6 +64,6 @@ python main.py
 flowchart LR
     Start([Start]) --> N1["Node 1: ingest_and_clean<br/>(Pandas & Multi-Sheet Excel)"]
     N1 --> N2["Node 2: correlate_incidents<br/>(LLM: IT Ops Analyst)"]
-    N2 --> N3["Node 3: generate_csi_backlog<br/>(LLM: CSI Lead & XLSX Export)"]
+    N2 --> N3["Node 3: generate_csi_backlog<br/>(LLM -> Pandas DF Print -> XLSX Export)"]
     N3 --> EndNode([End: csi_backlog_output.xlsx])
 ```
