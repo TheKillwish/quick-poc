@@ -1,0 +1,16 @@
+Batch_Cycle,App_Name,Process_Name,StartTime,EndTime,Duration,Status,Comments,Cancelled
+Midnight_Batch,App_Alpha,Process_Feed_Extract,00:05:00,01:15:20,01:10:20,SUCCESS,Normal extraction completed within scheduled SLA window.,No
+Midnight_Batch,App_Alpha,Process_Queue_Publish,01:20:00,02:00:15,00:40:15,SUCCESS,Queue message distribution completed with zero dropped packets.,No
+Intraday_Batch,App_Alpha,Process_Heartbeat_Check,12:00:00,12:05:00,00:05:00,SUCCESS,,No
+Midnight_Batch,App_Beta,Process_Store_Feed_Poll,01:30:00,03:10:00,01:40:00,SUCCESS,All regional store data polled successfully.,No
+Midnight_Batch,App_Beta,Process_POS_Transform,03:15:00,04:45:00,01:30:00,SUCCESS,POS delta transformation finished without warnings.,No
+Midnight_Batch,App_Gamma,Process_Ledger_Extract,03:00:00,04:15:00,01:15:00,SUCCESS,General ledger extract completed.,No
+Midnight_Batch,App_Gamma,Process_GL_Journal_Post,04:20:00,05:30:00,01:10:00,SUCCESS,Ledger journal posting validated.,No
+Midnight_Batch,App_Alpha,Process_Feed_Extract,00:06:30,08:37:24,08:30:54,DELAYED,We have received high volume from the App_Alpha upstream source system causing message queue congestion.,No
+Midnight_Batch,App_Alpha,Process_Queue_Publish,08:40:00,11:15:30,02:35:30,DELAYED,Buffer throttling in message gateway delayed downstream dispatch.,No
+Midnight_Batch,App_Beta,Process_Store_Feed_Poll,12:28:04,15:50:00,03:21:56,FAILED,We have not received data for Region_01 due to failure in App_Beta jobs (INC0076923). Currently App_Beta team is investigating the issue.,No
+Midnight_Batch,App_Beta,Process_POS_Transform,15:52:01,19:10:06,03:18:05,FAILED,Downstream POS transformation halted due to missing upstream Region_01 delta feed.,No
+Midnight_Batch,App_Gamma,Process_Ledger_Extract,17:00:00,18:15:00,01:15:00,SUCCESS,Extraction completed normally.,No
+Midnight_Batch,App_Gamma,Process_GL_Journal_Post,19:15:00,21:10:20,01:55:20,FAILED,App_Gamma Enterprise Ledger interface connection timeout during monthly GL journal posting (INC0078888).,No
+Intraday_Batch,App_Delta,Process_Stock_Delta_Sync,19:45:00,20:03:40,00:18:40,SUCCESS,Normal warehouse inventory snapshot completed.,No
+Intraday_Batch,App_Delta,Process_Staging_Temp_Purge,21:30:00,21:35:00,00:05:00,SUCCESS,,No

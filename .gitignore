@@ -1,0 +1,24 @@
+# Virtual Environment
+.venv/
+venv/
+ENV/
+env/
+
+# Secrets & Environment variables
+.env
+.env*.local
+
+# Python Cache & Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# IDE / OS specific
+.DS_Store
+Thumbs.db
+.idea/
+
+# Output Excel (uncomment if you do not want to track generated outputs)
+# csi_backlog_output.xlsx
+
